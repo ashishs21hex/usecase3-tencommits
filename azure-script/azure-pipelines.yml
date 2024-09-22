@@ -1,0 +1,31 @@
+# YAML Pipeline for a simple build and test process
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# Step 1: Check out the code
+- task: Checkout@1
+  displayName: 'Checkout code'
+
+# Step 2: Install dependencies
+- script: |
+    echo "Installing dependencies..."
+    npm install
+  displayName: 'Install Dependencies'
+
+# Step 3: Build the project
+- script: |
+    echo "Building project..."
+    npm run build
+  displayName: 'Build Project'
+
+# Step 4: Run tests
+- script: |
+    echo "Running tests..."
+    npm test
+  displayName: 'Run Tests'
