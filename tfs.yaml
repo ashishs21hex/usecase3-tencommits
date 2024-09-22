@@ -1,0 +1,53 @@
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+  paths:
+    include:
+      - src/*
+      - tests/*
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+
+steps:
+# Checkout the source code from repository
+- checkout: self
+
+# Restore NuGet packages
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: '5.x'
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(Build.SourcesDirectory)/src/YourProject.sln'
+
+# Build the project
+- task: VSBuild@1
+  inputs:
+    solution: '$(Build.SourcesDirectory)/src/YourProject.sln'
+    msbuildArgs: '/p:Configuration=$(buildConfiguration)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+# Run unit tests
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+    testAssemblyVer2: |
+      **\*test*.dll
+      !**\obj\**
+
+# Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
